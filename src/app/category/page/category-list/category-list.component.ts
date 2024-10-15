@@ -5,6 +5,7 @@ import {
   IonContent,
   IonFab,
   IonFabButton,
+  IonFabList,
   IonGrid,
   IonHeader,
   IonIcon,
@@ -13,6 +14,7 @@ import {
   IonInput,
   IonItem,
   IonLabel,
+  IonList,
   IonMenuButton,
   IonProgressBar,
   IonRefresher,
@@ -60,7 +62,9 @@ import CategoryModalComponent from '../../component/category-modal/category-moda
     IonInfiniteScroll,
     IonInfiniteScrollContent,
     IonFab,
-    IonFabButton
+    IonFabButton,
+    IonList,
+    IonFabList
   ]
 })
 export default class CategoryListComponent {
