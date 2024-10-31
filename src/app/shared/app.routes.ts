@@ -5,7 +5,6 @@ import { authGuard } from './guard/auth.guard';
 
 export const loginPath = 'login';
 export const defaultPath = categoriesPath; // TODO: switch to ex
-export const loginPath = 'login';
 
 const appRoutes: Routes = [
   {
@@ -14,21 +13,9 @@ const appRoutes: Routes = [
     pathMatch: 'full'
   },
   {
-    path: categoriesPath,
-    loadChildren: () => import('../category/category.routes')
-  },
-  {
-    path: expensesPath,
-    loadChildren: () => import('../expense/expense.routes')
-  },
-  {
-    path: '**',
-    redirectTo: defaultPath
-  }
-  {
     path: loginPath,
     loadComponent: () => import('./component/login/login.component')
-  }
+  },
   {
     path: categoriesPath,
     loadChildren: () => import('../category/category.routes'),
@@ -39,5 +26,10 @@ const appRoutes: Routes = [
     loadChildren: () => import('../expense/expense.routes'),
     canActivate: [authGuard]
   },
+  {
+    path: '**',
+    redirectTo: defaultPath
+  }
 ];
+
 export default appRoutes;
