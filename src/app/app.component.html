@@ -1,11 +1,16 @@
 <ion-app>
   <ion-split-pane contentId="main-content">
-    <ion-menu contentId="main-content" type="overlay">
-      <!-- Navigation List -->
+    <ion-menu [disabled]="(authService.currentUser() | async) === null">      <!-- Navigation List -->
       <ion-content>
         <ion-list id="menu-list">
           <ion-list-header>
             <ion-label>Budget UI</ion-label>
+            <ion-chip>
+              <ion-avatar>
+                <img [src]="(authService.currentUser() | async)?.photoURL" alt="" />
+              </ion-avatar>
+              <ion-label>{{ (authService.currentUser() | async)?.displayName }}</ion-label>
+            </ion-chip>
           </ion-list-header>
 
           @for (page of appPages; track page.title; let i = $index) {
@@ -19,7 +24,19 @@
         </ion-list>
       </ion-content>
     </ion-menu>
-
+    <!-- Logout Button -->
+    <ion-footer>
+      <ion-toolbar>
+        <ion-buttons>
+          @if (authService.currentUser() | async) {
+            <ion-button (click)="authService.logout()" color="primary">
+              <ion-icon class="ion-padding-end" name="log-out"/>
+              Logout
+            </ion-button>
+          }
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-footer>
     <!-- Router Outlet -->
     <ion-router-outlet id="main-content" />
   </ion-split-pane>
