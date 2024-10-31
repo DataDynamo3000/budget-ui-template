@@ -1,2 +1,43 @@
-Hallo
+<!-- ------ -->
+<!-- Header -->
+<!-- ------ -->
+<ion-header>
+  <ion-toolbar>
+    <!-- Cancel Button -->
+    <ion-buttons slot="start">
+      <ion-button color="medium" (click)="cancel()">
+        <ion-icon slot="start" name="close" />
+        Cancel
+      </ion-button>
+    </ion-buttons>
 
+    <!-- Title -->
+    <ion-title>Add category</ion-title>
+
+    <!-- Save Button -->
+    <ion-buttons slot="end">
+      <ion-button (click)="save()">
+        <ion-icon slot="start" name="save" />
+        Save
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<!-- ------- -->
+<!-- Content -->
+<!-- ------- -->
+<ion-content class="ion-padding">
+  <!-- Input -->
+  <ion-item>
+    <ion-icon name="text" slot="start" />
+    <ion-input maxlength="40" placeholder="Name" required="true" />
+  </ion-item>
+
+  <!-- Delete Button -->
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button (click)="delete()" color="danger">
+      <ion-icon name="trash" />
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>
