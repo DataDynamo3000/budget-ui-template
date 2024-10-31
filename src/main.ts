@@ -19,15 +19,13 @@ registerLocaleData(locale);
 
 bootstrapApplication(AppComponent, {
   providers: [
-    { provide: FIREBASE_OPTIONS, useValue: environment['firebaseConfig'] }
+    { provide: FIREBASE_OPTIONS, useValue: environment['firebaseConfig'] },
     { provide: DEFAULT_CURRENCY_CODE, useValue: 'CHF' },
     { provide: LOCALE_ID, useValue: 'de-CH' },
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     { provide: TitleStrategy, useClass: PageTitleStrategy },
     provideIonicAngular(),
-    provideRouter(appRoutes, withPreloading(PreloadAllModules))
-  ]
-  providers: [
+    provideRouter(appRoutes, withPreloading(PreloadAllModules)),
     provideHttpClient(withInterceptors([authInterceptor]))
   ]
 }).catch(err => console.error(err));
