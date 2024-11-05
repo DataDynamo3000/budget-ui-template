@@ -1,4 +1,4 @@
-import { CapacitorConfig } from '@capacitor/cli';
+class CapacitorConfig {}
 
 const config: CapacitorConfig = {
   appId: 'io.ionic.starter',
@@ -6,5 +6,4 @@ const config: CapacitorConfig = {
   webDir: 'www',
   bundledWebRuntime: false
 };
-
 export default config;

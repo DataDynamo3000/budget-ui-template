@@ -1,9 +1,9 @@
 import { Component, inject } from '@angular/core';
-import { AuthService } from '../../service/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { logoGithub, logoGoogle } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
 import { IonButton, IonCol, IonContent, IonGrid, IonIcon, IonRow } from '@ionic/angular/standalone';
+import { AuthService } from '../../auth.service';
 
 interface LoginProvider {
   name: string;

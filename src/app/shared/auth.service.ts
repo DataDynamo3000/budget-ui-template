@@ -4,9 +4,9 @@ import firebase from 'firebase/compat/app';
 import { ToastController } from '@ionic/angular/standalone';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Router } from '@angular/router';
-import { loginPath } from '../app.routes';
 import { addIcons } from 'ionicons';
 import { alertCircle } from 'ionicons/icons';
+import { loginPath } from './app.routes';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
