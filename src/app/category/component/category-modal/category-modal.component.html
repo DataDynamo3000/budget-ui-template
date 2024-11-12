@@ -27,8 +27,7 @@
 <!-- ------- -->
 <!-- Content -->
 <!-- ------- -->
-<ion-content class="ion-padding">
-  <!-- Input -->
+<ion-content class="ion-padding" [formGroup]="categoryForm">  <!-- Input -->
   <ion-item>
     <ion-icon name="text" slot="start"/>
     <ion-input #nameInput formControlName="name" maxlength="40" placeholder="Name" required="true"/>
