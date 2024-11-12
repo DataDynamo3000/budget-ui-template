@@ -1,4 +1,5 @@
 export const environment = {
+  backendUrl: 'https://budget-ui-xs9x.onrender.com',
   production: true,
   firebaseConfig: {
     apiKey: 'AIzaSyCHKc-9GFvrbXMKLlgua2yAtgCibPLddh8',

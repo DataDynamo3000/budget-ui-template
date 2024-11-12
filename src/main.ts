@@ -24,6 +24,7 @@ bootstrapApplication(AppComponent, {
     { provide: LOCALE_ID, useValue: 'de-CH' },
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     { provide: TitleStrategy, useClass: PageTitleStrategy },
+    provideHttpClient(),
     provideIonicAngular(),
     provideRouter(appRoutes, withPreloading(PreloadAllModules)),
     provideHttpClient(withInterceptors([authInterceptor]))
