@@ -1,6 +1,7 @@
 <ion-app>
   <ion-split-pane contentId="main-content">
-    <ion-menu contentId="main-content" type="overlay" [disabled]="(authService.currentUser() | async) === null">      <!-- Navigation List -->
+    <ion-menu contentId="main-content" type="overlay" [disabled]="(authService.currentUser() | async) === null">
+      <!-- Navigation List -->
       <ion-content>
         <ion-list id="menu-list">
           <ion-list-header>
@@ -29,7 +30,7 @@
           <ion-buttons>
             @if (authService.currentUser() | async) {
               <ion-button (click)="authService.logout()" color="primary">
-                <ion-icon class="ion-padding-end" name="log-out"/>
+                <ion-icon class="ion-padding-end" name="log-out" />
                 Logout
               </ion-button>
             }
