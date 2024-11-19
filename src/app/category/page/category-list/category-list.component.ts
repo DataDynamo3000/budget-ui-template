@@ -36,6 +36,7 @@ import { CategoryService } from '../../service/category.service';
 import { ToastService } from '../../../shared/toast.service';
 import { Category, CategoryCriteria } from '../../../shared/domain';
 import { finalize } from 'rxjs';
+import { InfiniteScrollCustomEvent } from '@ionic/angular';
 
 @Component({
   selector: 'app-category-list',
@@ -113,7 +114,10 @@ export default class CategoryListComponent implements ViewDidEnter {
   ionViewDidEnter(): void {
     this.loadCategories();
   }
-
+  loadNextCategoryPage($event: InfiniteScrollCustomEvent) {
+    this.searchCriteria.page++;
+    this.loadCategories(() => $event.target.complete());
+  }
   async openModal(): Promise<void> {
     const modal = await this.modalCtrl.create({ component: CategoryModalComponent });
     modal.present();
