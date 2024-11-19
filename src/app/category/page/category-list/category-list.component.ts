@@ -26,7 +26,8 @@ import {
   IonTitle,
   IonToolbar,
   ModalController,
-  ViewDidEnter
+  ViewDidEnter,
+  ViewDidLeave
 } from '@ionic/angular/standalone';
 import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
@@ -35,7 +36,7 @@ import CategoryModalComponent from '../../component/category-modal/category-moda
 import { CategoryService } from '../../service/category.service';
 import { ToastService } from '../../../shared/toast.service';
 import { Category, CategoryCriteria, SortOption } from '../../../shared/domain';
-import { finalize, Subscription } from 'rxjs';
+import { debounce, finalize, interval, Subscription } from 'rxjs';
 import { InfiniteScrollCustomEvent, RefresherCustomEvent } from '@ionic/angular';
 
 @Component({
@@ -73,7 +74,7 @@ import { InfiniteScrollCustomEvent, RefresherCustomEvent } from '@ionic/angular'
     IonFabList
   ]
 })
-export default class CategoryListComponent implements ViewDidEnter {
+export default class CategoryListComponent implements ViewDidEnter, ViewDidLeave {
   // DI
   private readonly categoryService = inject(CategoryService);
   private readonly modalCtrl = inject(ModalController);
@@ -91,6 +92,8 @@ export default class CategoryListComponent implements ViewDidEnter {
     { label: 'Name (A-Z)', value: 'name,asc' },
     { label: 'Name (Z-A)', value: 'name,desc' }
   ];
+  readonly searchForm = this.formBuilder.group({ name: [''], sort: [this.initialSort] });
+
   // eslint-disable-next-line @typescript-eslint/member-ordering
   constructor() {
     // Add all used Ionic icons
@@ -119,7 +122,17 @@ export default class CategoryListComponent implements ViewDidEnter {
   }
 
   ionViewDidEnter(): void {
-    this.loadCategories();
+    this.searchFormSubscription = this.searchForm.valueChanges
+      .pipe(debounce(searchParams => interval(searchParams.name?.length ? 400 : 0)))
+      .subscribe(searchParams => {
+        this.searchCriteria = { ...this.searchCriteria, ...searchParams, page: 0 };
+        this.loadCategories();
+      });
+  }
+
+  ionViewDidLeave(): void {
+    this.searchFormSubscription?.unsubscribe();
+    this.searchFormSubscription = undefined;
   }
 
   loadNextCategoryPage($event: InfiniteScrollCustomEvent) {
