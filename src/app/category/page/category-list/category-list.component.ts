@@ -28,14 +28,14 @@ import {
   ModalController,
   ViewDidEnter
 } from '@ionic/angular/standalone';
-import { ReactiveFormsModule } from '@angular/forms';
+import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { add, alertCircleOutline, search, swapVertical } from 'ionicons/icons';
 import CategoryModalComponent from '../../component/category-modal/category-modal.component';
 import { CategoryService } from '../../service/category.service';
 import { ToastService } from '../../../shared/toast.service';
-import { Category, CategoryCriteria } from '../../../shared/domain';
-import { finalize } from 'rxjs';
+import { Category, CategoryCriteria, SortOption } from '../../../shared/domain';
+import { finalize, Subscription } from 'rxjs';
 import { InfiniteScrollCustomEvent, RefresherCustomEvent } from '@ionic/angular';
 
 @Component({
@@ -83,7 +83,14 @@ export default class CategoryListComponent implements ViewDidEnter {
   lastPageReached = false;
   loading = false;
   searchCriteria: CategoryCriteria = { page: 0, size: 25, sort: this.initialSort };
-
+  private readonly formBuilder = inject(NonNullableFormBuilder);
+  private searchFormSubscription?: Subscription;
+  readonly sortOptions: SortOption[] = [
+    { label: 'Created at (newest first)', value: 'createdAt,desc' },
+    { label: 'Created at (oldest first)', value: 'createdAt,asc' },
+    { label: 'Name (A-Z)', value: 'name,asc' },
+    { label: 'Name (Z-A)', value: 'name,desc' }
+  ];
   // eslint-disable-next-line @typescript-eslint/member-ordering
   constructor() {
     // Add all used Ionic icons
