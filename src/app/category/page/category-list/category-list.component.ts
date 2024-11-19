@@ -25,7 +25,8 @@ import {
   IonSkeletonText,
   IonTitle,
   IonToolbar,
-  ModalController
+  ModalController,
+  ViewDidEnter
 } from '@ionic/angular/standalone';
 import { ReactiveFormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
@@ -34,6 +35,7 @@ import CategoryModalComponent from '../../component/category-modal/category-moda
 import { CategoryService } from '../../service/category.service';
 import { ToastService } from '../../../shared/toast.service';
 import { Category, CategoryCriteria } from '../../../shared/domain';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-category-list',
@@ -70,7 +72,7 @@ import { Category, CategoryCriteria } from '../../../shared/domain';
     IonFabList
   ]
 })
-export default class CategoryListComponent {
+export default class CategoryListComponent implements ViewDidEnter {
   // DI
   private readonly categoryService = inject(CategoryService);
   private readonly modalCtrl = inject(ModalController);
@@ -81,9 +83,35 @@ export default class CategoryListComponent {
   loading = false;
   searchCriteria: CategoryCriteria = { page: 0, size: 25, sort: this.initialSort };
 
+  // eslint-disable-next-line @typescript-eslint/member-ordering
   constructor() {
     // Add all used Ionic icons
     addIcons({ swapVertical, search, alertCircleOutline, add });
+  }
+
+  private loadCategories(next?: () => void): void {
+    if (!this.searchCriteria.name) delete this.searchCriteria.name;
+    this.loading = true;
+    this.categoryService
+      .getCategories(this.searchCriteria)
+      .pipe(
+        finalize(() => {
+          this.loading = false;
+          if (next) next();
+        })
+      )
+      .subscribe({
+        next: categories => {
+          if (this.searchCriteria.page === 0 || !this.categories) this.categories = [];
+          this.categories.push(...categories.content);
+          this.lastPageReached = categories.last;
+        },
+        error: error => this.toastService.displayWarningToast('Could not load categories', error)
+      });
+  }
+
+  ionViewDidEnter(): void {
+    this.loadCategories();
   }
 
   async openModal(): Promise<void> {
