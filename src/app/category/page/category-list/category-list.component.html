@@ -45,6 +45,11 @@
       <ion-infinite-scroll-content />
     </ion-infinite-scroll>
 
+    <!-- Refresher -->
+    <ion-refresher slot="fixed" (ionRefresh)="reloadCategories($event)" [disabled]="loading">
+      <ion-refresher-content />
+    </ion-refresher>
+
     <!-- Category List -->
     <ion-row>
       <ion-col>
