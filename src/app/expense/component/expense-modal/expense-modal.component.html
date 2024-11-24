@@ -5,18 +5,18 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button color="medium">
+      <ion-button color="medium" (click)="cancel()">
         <ion-icon slot="start" name="close"></ion-icon>
-          Cancel
+        Cancel
       </ion-button>
     </ion-buttons>
     <ion-title>
       Add Expense
     </ion-title>
     <ion-buttons slot="end">
-      <ion-button>
+      <ion-button (click)="save()" [disabled]="expenseForm.invalid || isLoading">
         <ion-icon slot="start" name="save"></ion-icon>
-         Save
+        Save
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -26,36 +26,66 @@
 <!-- Content -->
 <!-- ------ -->
 <ion-content style="--offset-top: 0px; --offset-bottom: 0px;">
-  <!-- Name -->
-  <ion-item>
-    <ion-icon name="text" slot="start"></ion-icon>
-    <ion-input maxlength="40" placeholder="Name"></ion-input>
-  </ion-item>
-  <!-- Category -->
-  <ion-item>
-    <ion-icon name="pricetag" slot="start"></ion-icon>
-    <ion-select interface="popover" placeholder="Category">
-      <ion-select-option id="ion-selopt-10"></ion-select-option>
-    </ion-select>
-    <ion-button slot="end">
-      <ion-icon slot="icon-only" name="add"></ion-icon>
-    </ion-button>
-  </ion-item>
-  <!-- Amount -->
-  <ion-item>
-    <ion-icon name="cash" slot="start"></ion-icon>
-    <ion-input inputmode="decimal" placeholder="Amount" type="number" required step="0.01"></ion-input>
-    <ion-note slot="end">CHF</ion-note>
-  </ion-item>
-  <!-- Date -->
-  <ion-item>
-    <ion-icon name="calendar" slot="start"></ion-icon>
-    <ion-datetime-button datetime="date"></ion-datetime-button>
+  <form [formGroup]="expenseForm" (ngSubmit)="save()">
 
-    <ion-modal [keepContentsMounted]="true">
-      <ng-template>
-        <ion-datetime id="date" presentation="date"></ion-datetime>
-      </ng-template>
-    </ion-modal>
-  </ion-item>
+    <!-- Name -->
+    <ion-item>
+      <ion-icon name="text" slot="start"></ion-icon>
+      <ion-input
+        formControlName="name"
+        maxlength="40"
+        placeholder="Name"
+        type="text"
+        required>
+      </ion-input>
+    </ion-item>
+    <ion-note *ngIf="expenseForm.get('name')?.invalid && expenseForm.get('name')?.touched" color="danger">
+      Name is required (min. 3 characters).
+    </ion-note>
+
+    <!-- Category -->
+    <ion-item>
+      <ion-icon name="pricetag" slot="start"></ion-icon>
+      <ion-select formControlName="categoryId" interface="popover" placeholder="Category">
+        <ion-select-option *ngFor="let category of categories" [value]="category.id">
+          {{ category.name }}
+        </ion-select-option>
+      </ion-select>
+      <ion-button slot="end" (click)="showCategoryModal()">
+        <ion-icon slot="icon-only" name="add"></ion-icon>
+      </ion-button>
+    </ion-item>
+
+    <!-- Amount -->
+    <ion-item>
+      <ion-icon name="cash" slot="start"></ion-icon>
+      <ion-input
+        formControlName="amount"
+        inputmode="decimal"
+        placeholder="Amount"
+        type="number"
+        step="0.01"
+        required>
+      </ion-input>
+      <ion-note slot="end">CHF</ion-note>
+    </ion-item>
+    <ion-note *ngIf="expenseForm.get('amount')?.invalid && expenseForm.get('amount')?.touched" color="danger">
+      Amount must be positive and required.
+    </ion-note>
+
+    <!-- Date -->
+    <ion-item>
+      <ion-icon name="calendar" slot="start"></ion-icon>
+      <ion-datetime-button datetime="date"></ion-datetime-button>
+
+      <ion-modal [keepContentsMounted]="true">
+        <ng-template>
+          <ion-datetime id="date" presentation="date"></ion-datetime>
+        </ng-template>
+      </ion-modal>
+    </ion-item>
+    <!-- Progress Bar -->
+    <ion-progress-bar *ngIf="isLoading" type="indeterminate"></ion-progress-bar>
+
+  </form>
 </ion-content>

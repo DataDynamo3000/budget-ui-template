@@ -34,6 +34,20 @@ export class ToastService {
     });
   }
 
+  displayErrorToast(message: string, error?: HttpErrorResponse): void {
+    console.error(message, error);
+    const errorMessage = error instanceof HttpErrorResponse ? `${message}. ${error.error?.message || ''}` : `${message}. ${String(error)}`;
+
+    this.displayToast({
+      message: errorMessage,
+      duration: 3000,
+      position: 'bottom',
+      color: 'danger',
+      icon: 'close',
+      buttons: [{ icon: 'close', role: 'cancel' }]
+    });
+  }
+
   // --------------
   // Helper methods
   // --------------

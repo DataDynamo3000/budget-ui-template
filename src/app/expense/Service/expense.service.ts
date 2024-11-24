@@ -8,8 +8,7 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root'
 })
 export class ExpenseService {
-  private readonly baseUrl = `${environment.apiUrl}/expenses`;
-
+  private readonly baseUrl = `${environment.apiUrl}/expenses`.replace('/api', '');
   constructor(private http: HttpClient) {}
 
   // GET: Ausgaben abrufen

@@ -87,7 +87,9 @@ export default class ExpenseListComponent {
     // Add all used Ionic icons
     addIcons({ swapVertical, pricetag, search, alertCircleOutline, add, arrowBack, arrowForward });
   }
-
+  reloadExpenses(): void {
+    console.log('Reloading expenses...');
+  }
   addMonths = (number: number): void => {
     this.date = addMonths(this.date, number);
   };
@@ -100,5 +102,9 @@ export default class ExpenseListComponent {
       }
     });
     await modal.present();
+    const { role } = await modal.onWillDismiss();
+    if (role === 'save') {
+      this.reloadExpenses(); // Neu laden, wenn ein Expense gespeichert wurde
+    }
   }
 }
