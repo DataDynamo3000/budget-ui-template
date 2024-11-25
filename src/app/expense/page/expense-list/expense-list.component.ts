@@ -93,6 +93,7 @@ export default class ExpenseListComponent implements OnInit {
   // DI
   private readonly modalCtrl = inject(ModalController);
   private readonly expenseService = inject(ExpenseService);
+  private currentPage = 0;
 
   date = set(new Date(), { date: 1 });
   expenseGroups: ExpenseGroup[] | null = null; // Zum Speichern der gruppierten Ausgaben
@@ -124,22 +125,46 @@ export default class ExpenseListComponent implements OnInit {
     }));
   }
 
+  private mergeExpenseGroups(existingGroups: ExpenseGroup[], newGroups: ExpenseGroup[]): ExpenseGroup[] {
+    const mergedGroups = [...existingGroups];
+
+    newGroups.forEach(newGroup => {
+      const existingGroup = mergedGroups.find(group => group.date === newGroup.date);
+      if (existingGroup) {
+        existingGroup.expenses = [...existingGroup.expenses, ...newGroup.expenses];
+      } else {
+        mergedGroups.push(newGroup);
+      }
+    });
+
+    return mergedGroups;
+  }
+
   private loadExpenses(next: () => void = () => {}): void {
     const criteria: ExpenseCriteria = {
       yearMonth: `${this.date.getFullYear()}${(this.date.getMonth() + 1).toString().padStart(2, '0')}`,
-      page: 0,
-      size: 0,
+      page: this.currentPage,
+      size: 10,
       sort: 'date,DESC'
     };
-    console.log('Loading expenses for yearMonth:', criteria.yearMonth); // Debug-Ausgabe
+
+    console.log('Loading expenses for yearMonth:', criteria.yearMonth); // Debugging-Ausgabe
     this.loading = true;
 
     this.expenseService.getExpenses(criteria).subscribe({
       next: expensePage => {
-        console.log('Loaded expenses from API:', expensePage.content); // Debug-Ausgabe
-        this.lastPageReached = expensePage.last;
-        this.expenseGroups = this.groupExpensesByDate(expensePage.content);
-        next();
+        console.log('Loaded expenses from API:', expensePage.content); // Debugging-Ausgabe
+        const newGroups = this.groupExpensesByDate(expensePage.content);
+        this.expenseGroups = this.mergeExpenseGroups(this.expenseGroups || [], newGroups);
+
+        if (!expensePage.last && expensePage.content.length > 0 && this.expenseGroups.length < 10) {
+          console.log('Not enough entries for scrolling. Loading next page...');
+          this.currentPage++;
+          this.loadExpenses(next); // Rekursiv weitere Seiten laden
+        } else {
+          this.lastPageReached = expensePage.last;
+          next();
+        }
       },
       error: err => {
         console.error('Failed to load expenses:', err);
@@ -160,40 +185,48 @@ export default class ExpenseListComponent implements OnInit {
   }
 
   onScrollEnd(event: CustomEvent): void {
-    if (!this.lastPageReached) {
-      // Ermittle die aktuelle Seite basierend auf der Anzahl der geladenen Einträge
-      const currentPage = Math.floor(
-        (this.expenseGroups?.map((group: ExpenseGroup) => group.expenses).reduce((acc, expenses) => acc.concat(expenses), []).length || 0) /
-          10
-      );
-      const criteria: ExpenseCriteria = {
-        yearMonth: `${this.date.getFullYear()}${(this.date.getMonth() + 1).toString().padStart(2, '0')}`,
-        page: currentPage,
-        size: 10,
-        sort: 'date,DESC'
-      };
-
-      this.expenseService.getExpenses(criteria).subscribe({
-        next: expensePage => {
-          const newGroups = this.groupExpensesByDate(expensePage.content);
-          this.expenseGroups = [...(this.expenseGroups || []), ...newGroups];
-          this.lastPageReached = expensePage.last;
-
-          (event.target as HTMLIonInfiniteScrollElement).complete();
-        },
-        error: err => {
-          console.error('Failed to load more expenses:', err);
-          (event.target as HTMLIonInfiniteScrollElement).complete();
-        }
-      });
-    } else {
-      (event.target as HTMLIonInfiniteScrollElement).complete();
+    console.log('onScrollEnd triggered. Current page:', this.currentPage);
+    console.log('Last page reached status:', this.lastPageReached);
+    if (this.lastPageReached) {
+      (event.target as HTMLIonInfiniteScrollElement).complete(); // Beende den Infinite Scroll, wenn alle Daten geladen sind
+      return;
     }
+
+    const criteria: ExpenseCriteria = {
+      yearMonth: `${this.date.getFullYear()}${(this.date.getMonth() + 1).toString().padStart(2, '0')}`,
+      page: this.currentPage + 1, // Lade die nächste Seite
+      size: 10,
+      sort: 'date,DESC'
+    };
+
+    console.log('Loading next page with criteria:', criteria); // Debug-Ausgabe
+
+    this.expenseService.getExpenses(criteria).subscribe({
+      next: expensePage => {
+        console.log('Loaded expenses for next page:', expensePage.content); // Debug-Ausgabe
+
+        const newGroups = this.groupExpensesByDate(expensePage.content);
+        this.expenseGroups = this.mergeExpenseGroups(this.expenseGroups || [], newGroups);
+
+        this.lastPageReached = expensePage.last; // Aktualisiere den Status für die letzte Seite
+        this.currentPage++; // Erhöhe die Seitenzahl
+        (event.target as HTMLIonInfiniteScrollElement).complete();
+      },
+      error: err => {
+        console.error('Failed to load more expenses:', err);
+        (event.target as HTMLIonInfiniteScrollElement).complete();
+      }
+    });
   }
 
   addMonths = (number: number): void => {
     this.date = addMonths(this.date, number); // Monat ändern
     console.log('Updated date:', this.date); // Debug-Ausgabe
+
+    this.expenseGroups = null; // Alte Gruppen zurücksetzen
+    this.lastPageReached = false; // Infinite Scroll zurücksetzen
+    this.currentPage = 0; // Seitenzähler zurücksetzen
+
     this.loadExpenses(); // Daten für den neuen Monat laden
   };
 

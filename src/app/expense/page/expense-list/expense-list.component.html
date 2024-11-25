@@ -102,8 +102,12 @@
     </ion-fab-button>
   </ion-fab>
   <!-- Infinite Scroll -->
+  <!-- Infinite Scroll -->
   <ion-infinite-scroll threshold="100px" (ionInfinite)="onScrollEnd($event)">
-    <ion-infinite-scroll-content></ion-infinite-scroll-content>
+    <ion-infinite-scroll-content
+      loadingSpinner="bubbles"
+      loadingText="Loading more expenses...">
+    </ion-infinite-scroll-content>
   </ion-infinite-scroll>
 </ion-content>
 
