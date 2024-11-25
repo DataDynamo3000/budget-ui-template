@@ -20,6 +20,7 @@ import {
   IonLabel,
   IonList,
   IonMenuButton,
+  IonNote,
   IonProgressBar,
   IonRefresher,
   IonRefresherContent,
@@ -81,7 +82,8 @@ interface ExpenseGroup {
     IonFab,
     IonFabButton,
     IonFooter,
-    IonButton
+    IonButton,
+    IonNote
   ]
 })
 export default class ExpenseListComponent {
@@ -139,8 +141,38 @@ export default class ExpenseListComponent {
     });
   }
 
-  reloadExpenses(): void {
-    console.log('Reloading expenses...');
+  reloadExpenses(event?: CustomEvent): void {
+    this.loadExpenses(() => {
+      if (event) {
+        (event.target as HTMLIonRefresherElement).complete(); // Beendet die Refresher-Animation
+      }
+    });
+  }
+
+  onScrollEnd(event: CustomEvent): void {
+    if (!this.lastPageReached) {
+      const criteria = {
+        yearMonth: `${this.date.getFullYear()}-${(this.date.getMonth() + 1).toString().padStart(2, '0')}`,
+        page: 1, // Passe die Pagination-Logik hier an
+        size: 10,
+        sort: 'date,desc'
+      };
+
+      this.expenseService.getExpenses(criteria).subscribe({
+        next: expensePage => {
+          this.lastPageReached = expensePage.last;
+          const newGroups = this.groupExpensesByDate(expensePage.content);
+          this.expenseGroups = [...(this.expenseGroups || []), ...newGroups];
+          (event.target as HTMLIonInfiniteScrollElement).complete();
+        },
+        error: err => {
+          console.error('Failed to load more expenses:', err);
+          (event.target as HTMLIonInfiniteScrollElement).complete();
+        }
+      });
+    } else {
+      (event.target as HTMLIonInfiniteScrollElement).complete(); // Beendet die Animation, wenn keine weiteren Daten
+    }
   }
 
   addMonths = (number: number): void => {

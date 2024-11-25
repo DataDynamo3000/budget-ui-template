@@ -16,6 +16,10 @@
 <!-- Content -->
 <!-- ------- -->
 <ion-content>
+  <!-- Refresher -->
+  <ion-refresher slot="fixed" (ionRefresh)="reloadExpenses($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
   <ion-grid>
     <ion-row>
       <ion-col size="12" size-sm="4">
@@ -46,14 +50,37 @@
         </ion-item>
       </ion-col>
     </ion-row>
+    <!-- Expenses List -->
     <ion-row>
       <ion-col>
-        <ion-list>
-          <ion-item>
-            <ion-icon slot="start" name="alert-circle-outline"></ion-icon>
-            <ion-label> No expenses found</ion-label>
+        <!-- Skeleton Loader -->
+        <ion-list *ngIf="loading">
+          <ion-item *ngFor="let i of [1, 2, 3]">
+            <ion-skeleton-text animated style="width: 60%;"></ion-skeleton-text>
           </ion-item>
         </ion-list>
+
+        <!-- Expenses -->
+        <ion-list *ngIf="expenseGroups && expenseGroups.length; else noExpenses">
+          <ng-container *ngFor="let group of expenseGroups">
+            <ion-item-group>
+              <ion-item-divider>
+                <ion-label>{{ group.date | date: 'longDate' }}</ion-label>
+              </ion-item-divider>
+              <ion-item *ngFor="let expense of group.expenses">
+                <ion-label>{{ expense.name }}</ion-label>
+                <ion-note slot="end">{{ expense.amount | currency }}</ion-note>
+              </ion-item>
+            </ion-item-group>
+          </ng-container>
+        </ion-list>
+
+        <!-- No Expenses Template -->
+        <ng-template #noExpenses>
+          <ion-item>
+            <ion-label>No expenses found for this month.</ion-label>
+          </ion-item>
+        </ng-template>
       </ion-col>
     </ion-row>
   </ion-grid>
@@ -64,6 +91,10 @@
       <ion-icon name="add" />
     </ion-fab-button>
   </ion-fab>
+  <!-- Infinite Scroll -->
+  <ion-infinite-scroll threshold="100px" (ionInfinite)="onScrollEnd($event)">
+    <ion-infinite-scroll-content></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 </ion-content>
 
 <!-- Footer -->
