@@ -76,8 +76,10 @@
     <!-- Date -->
     <ion-item>
       <ion-icon name="calendar" slot="start"></ion-icon>
-      <ion-datetime-button>
-      </ion-datetime-button>
+      <ion-datetime
+        formControlName="date"
+        presentation="date">
+      </ion-datetime>
     </ion-item>
     <!-- Progress Bar -->
     <ion-progress-bar *ngIf="isLoading" type="indeterminate"></ion-progress-bar>
