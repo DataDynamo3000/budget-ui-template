@@ -39,6 +39,7 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
 import ExpenseModalComponent from '../../component/expense-modal/expense-modal.component';
 import { Expense, ExpenseCriteria } from '../../../shared/domain';
 import { ExpenseService } from '../../Service/expense.service';
+import { CommonModule } from '@angular/common';
 
 interface ExpenseGroup {
   date: string;
@@ -50,6 +51,7 @@ interface ExpenseGroup {
   templateUrl: './expense-list.component.html',
   standalone: true,
   imports: [
+    CommonModule,
     CurrencyPipe,
     DatePipe,
     ReactiveFormsModule,
@@ -116,11 +118,10 @@ export default class ExpenseListComponent {
 
   private loadExpenses(next: () => void = () => {}): void {
     const criteria: ExpenseCriteria = {
-      // Dein Filterkriterium
-      yearMonth: `${this.date.getFullYear()}-${(this.date.getMonth() + 1).toString().padStart(2, '0')}`,
+      yearMonth: `${this.date.getFullYear()}${(this.date.getMonth() + 1).toString().padStart(2, '0')}`,
       page: 0,
       size: 10,
-      sort: 'date,desc' // Beispiel: Nach Datum sortieren
+      sort: 'date,DESC' // Korrigiert nach API-Dokumentation
     };
 
     this.loading = true;
@@ -144,7 +145,7 @@ export default class ExpenseListComponent {
   reloadExpenses(event?: CustomEvent): void {
     this.loadExpenses(() => {
       if (event) {
-        (event.target as HTMLIonRefresherElement).complete(); // Beendet die Refresher-Animation
+        void (event.target as HTMLIonRefresherElement).complete(); // Beendet die Refresher-Animation
       }
     });
   }
@@ -163,15 +164,15 @@ export default class ExpenseListComponent {
           this.lastPageReached = expensePage.last;
           const newGroups = this.groupExpensesByDate(expensePage.content);
           this.expenseGroups = [...(this.expenseGroups || []), ...newGroups];
-          (event.target as HTMLIonInfiniteScrollElement).complete();
+          void (event.target as HTMLIonInfiniteScrollElement).complete();
         },
         error: err => {
           console.error('Failed to load more expenses:', err);
-          (event.target as HTMLIonInfiniteScrollElement).complete();
+          void (event.target as HTMLIonInfiniteScrollElement).complete();
         }
       });
     } else {
-      (event.target as HTMLIonInfiniteScrollElement).complete(); // Beendet die Animation, wenn keine weiteren Daten
+      void (event.target as HTMLIonInfiniteScrollElement).complete(); // Beendet die Animation, wenn keine weiteren Daten
     }
   }
 
