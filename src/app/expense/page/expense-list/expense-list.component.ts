@@ -40,6 +40,7 @@ import ExpenseModalComponent from '../../component/expense-modal/expense-modal.c
 import { Expense, ExpenseCriteria } from '../../../shared/domain';
 import { ExpenseService } from '../../Service/expense.service';
 import { CommonModule } from '@angular/common';
+import { OnInit } from '@angular/core';
 
 interface ExpenseGroup {
   date: string;
@@ -88,7 +89,7 @@ interface ExpenseGroup {
     IonNote
   ]
 })
-export default class ExpenseListComponent {
+export default class ExpenseListComponent implements OnInit {
   // DI
   private readonly modalCtrl = inject(ModalController);
   private readonly expenseService = inject(ExpenseService);
@@ -101,6 +102,11 @@ export default class ExpenseListComponent {
   constructor() {
     // Add all used Ionic icons
     addIcons({ swapVertical, pricetag, search, alertCircleOutline, add, arrowBack, arrowForward });
+  }
+
+  ngOnInit(): void {
+    console.log('Initializing ExpenseListComponent...');
+    this.loadExpenses(); // Daten beim Start der Komponente laden
   }
 
   private groupExpensesByDate(expenses: Expense[]): ExpenseGroup[] {
@@ -121,7 +127,7 @@ export default class ExpenseListComponent {
       yearMonth: `${this.date.getFullYear()}${(this.date.getMonth() + 1).toString().padStart(2, '0')}`,
       page: 0,
       size: 10,
-      sort: 'date,DESC' // Korrigiert nach API-Dokumentation
+      sort: 'date,DESC'
     };
 
     this.loading = true;
