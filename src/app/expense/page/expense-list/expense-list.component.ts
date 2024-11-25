@@ -110,12 +110,14 @@ export default class ExpenseListComponent implements OnInit {
   }
 
   private groupExpensesByDate(expenses: Expense[]): ExpenseGroup[] {
+    console.log('Raw expenses:', expenses); // Debug-Ausgabe
     const grouped: { [key: string]: Expense[] } = {};
     expenses.forEach(expense => {
       if (!grouped[expense.date]) grouped[expense.date] = [];
       grouped[expense.date].push(expense);
     });
 
+    console.log('Grouped expenses:', grouped); // Debug-Ausgabe
     return Object.keys(grouped).map(date => ({
       date,
       expenses: grouped[date]
@@ -126,14 +128,15 @@ export default class ExpenseListComponent implements OnInit {
     const criteria: ExpenseCriteria = {
       yearMonth: `${this.date.getFullYear()}${(this.date.getMonth() + 1).toString().padStart(2, '0')}`,
       page: 0,
-      size: 10,
+      size: 0,
       sort: 'date,DESC'
     };
-
+    console.log('Loading expenses for yearMonth:', criteria.yearMonth); // Debug-Ausgabe
     this.loading = true;
 
     this.expenseService.getExpenses(criteria).subscribe({
       next: expensePage => {
+        console.log('Loaded expenses from API:', expensePage.content); // Debug-Ausgabe
         this.lastPageReached = expensePage.last;
         this.expenseGroups = this.groupExpensesByDate(expensePage.content);
         next();
@@ -158,45 +161,58 @@ export default class ExpenseListComponent implements OnInit {
 
   onScrollEnd(event: CustomEvent): void {
     if (!this.lastPageReached) {
-      const criteria = {
-        yearMonth: `${this.date.getFullYear()}-${(this.date.getMonth() + 1).toString().padStart(2, '0')}`,
-        page: 1, // Passe die Pagination-Logik hier an
+      // Ermittle die aktuelle Seite basierend auf der Anzahl der geladenen Einträge
+      const currentPage = Math.floor(
+        (this.expenseGroups?.map((group: ExpenseGroup) => group.expenses).reduce((acc, expenses) => acc.concat(expenses), []).length || 0) /
+          10
+      );
+      const criteria: ExpenseCriteria = {
+        yearMonth: `${this.date.getFullYear()}${(this.date.getMonth() + 1).toString().padStart(2, '0')}`,
+        page: currentPage,
         size: 10,
-        sort: 'date,desc'
+        sort: 'date,DESC'
       };
 
       this.expenseService.getExpenses(criteria).subscribe({
         next: expensePage => {
-          this.lastPageReached = expensePage.last;
           const newGroups = this.groupExpensesByDate(expensePage.content);
           this.expenseGroups = [...(this.expenseGroups || []), ...newGroups];
-          void (event.target as HTMLIonInfiniteScrollElement).complete();
+          this.lastPageReached = expensePage.last;
+
+          (event.target as HTMLIonInfiniteScrollElement).complete();
         },
         error: err => {
           console.error('Failed to load more expenses:', err);
-          void (event.target as HTMLIonInfiniteScrollElement).complete();
+          (event.target as HTMLIonInfiniteScrollElement).complete();
         }
       });
     } else {
-      void (event.target as HTMLIonInfiniteScrollElement).complete(); // Beendet die Animation, wenn keine weiteren Daten
+      (event.target as HTMLIonInfiniteScrollElement).complete();
     }
   }
 
   addMonths = (number: number): void => {
-    this.date = addMonths(this.date, number);
+    this.date = addMonths(this.date, number); // Monat ändern
+    console.log('Updated date:', this.date); // Debug-Ausgabe
+    this.loadExpenses(); // Daten für den neuen Monat laden
   };
 
   async openModal() {
+    const formattedDate = this.date.toISOString().split('T')[0];
+    console.log('Opening modal with date:', formattedDate); // Debugging-Ausgabe
+
     const modal = await this.modalCtrl.create({
       component: ExpenseModalComponent,
       componentProps: {
-        date: this.date
+        date: formattedDate
       }
     });
+
     await modal.present();
+
     const { role } = await modal.onWillDismiss();
     if (role === 'save') {
-      this.reloadExpenses(); // Neu laden, wenn ein Expense gespeichert wurde
+      this.reloadExpenses();
     }
   }
 }

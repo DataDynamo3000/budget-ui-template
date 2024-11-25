@@ -12,6 +12,8 @@
     </ion-title>
   </ion-toolbar>
 </ion-header>
+<!-- Progress Bar -->
+<ion-progress-bar *ngIf="loading" type="indeterminate"></ion-progress-bar>
 <!-- ------- -->
 <!-- Content -->
 <!-- ------- -->
@@ -74,6 +76,14 @@
             </ion-item-group>
           </ng-container>
         </ion-list>
+
+        <!-- Infinite Scroll -->
+        <ion-infinite-scroll threshold="100px" (ionInfinite)="onScrollEnd($event)">
+          <ion-infinite-scroll-content
+            loadingSpinner="bubbles"
+            loadingText="Loading more expenses...">
+          </ion-infinite-scroll-content>
+        </ion-infinite-scroll>
 
         <!-- No Expenses Template -->
         <ng-template #noExpenses>

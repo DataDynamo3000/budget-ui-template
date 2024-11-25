@@ -33,6 +33,7 @@ import { ToastService } from '../../../shared/toast.service';
 import { formatISO } from 'date-fns';
 import { CommonModule } from '@angular/common';
 import { EventEmitter, Output } from '@angular/core';
+import { Input } from '@angular/core';
 
 @Component({
   selector: 'app-expense-modal',
@@ -66,6 +67,7 @@ import { EventEmitter, Output } from '@angular/core';
   ]
 })
 export default class ExpenseModalComponent {
+  @Input() date!: string;
   @Output() expenseSaved = new EventEmitter<void>();
   expenseForm!: FormGroup;
   categories: Category[] = [];
@@ -80,17 +82,24 @@ export default class ExpenseModalComponent {
   constructor() {
     // Add all used Ionic icons
     addIcons({ close, save, text, pricetag, add, cash, calendar, trash });
-    this.initializeForm();
     this.loadAllCategories();
+  }
+
+  ngOnInit() {
+    console.log('Received date in modal:', this.date); // Debugging-Ausgabe
+    this.initializeForm();
   }
 
   //Initialisiert
   private initializeForm(): void {
+    const defaultDate = this.date || formatISO(new Date(), { representation: 'date' });
+    console.log('Initializing form with default date:', defaultDate); // Debugging
+
     this.expenseForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
-      categoryId: [null], // Optional
+      categoryId: [null],
       amount: [0, [Validators.required, Validators.min(0.01)]],
-      date: [formatISO(new Date(), { representation: 'date' }), Validators.required]
+      date: [defaultDate, Validators.required] // Setze das Datum im Formular
     });
   }
 
@@ -111,13 +120,13 @@ export default class ExpenseModalComponent {
 
     this.isLoading = true;
 
+    // Nutze das exakte Datum aus dem Formular
     const expense: ExpenseUpsertDto = {
       ...this.expenseForm.value,
-      date: formatISO(new Date(this.expenseForm.value.date), { representation: 'date' })
+      date: this.expenseForm.value.date // Direkt aus dem Formular
     };
 
-    console.log('API URL:', this.expenseService['baseUrl']); // Debugging der URL
-    console.log('Payload:', expense); // Debugging des Payloads
+    console.log('Saving expense with payload:', expense); // Debugging-Ausgabe
 
     this.expenseService.upsertExpense(expense).subscribe({
       next: () => {
