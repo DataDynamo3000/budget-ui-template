@@ -70,8 +70,23 @@
                 <ion-label>{{ group.date | date: 'longDate' }}</ion-label>
               </ion-item-divider>
               <ion-item *ngFor="let expense of group.expenses">
-                <ion-label>{{ expense.name }}</ion-label>
-                <ion-note slot="end">{{ expense.amount | currency }}</ion-note>
+                <div style="display: flex; align-items: center; width: 100%;">
+                  <!-- Name -->
+                  <div style="flex: 1;">
+                    {{ expense.name }}
+                  </div>
+
+                  <!-- Category (mit Icon) -->
+                  <div *ngIf="expense.category" style="flex: 1; text-align: center;">
+                    <ion-icon name="pricetag" style="vertical-align: middle; margin-right: 4px;"></ion-icon>
+                    {{ expense.category.name }}
+                  </div>
+
+                  <!-- Amount -->
+                  <div style="flex: 1; text-align: right;">
+                    {{ expense.amount | currency }}
+                  </div>
+                </div>
               </ion-item>
             </ion-item-group>
           </ng-container>

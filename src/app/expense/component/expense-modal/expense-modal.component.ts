@@ -120,10 +120,12 @@ export default class ExpenseModalComponent {
 
     this.isLoading = true;
 
-    // Nutze das exakte Datum aus dem Formular
+    const selectedCategory = this.categories.find(category => category.id === this.expenseForm.value.categoryId);
+
     const expense: ExpenseUpsertDto = {
       ...this.expenseForm.value,
-      date: this.expenseForm.value.date // Direkt aus dem Formular
+      date: this.expenseForm.value.date,
+      category: selectedCategory
     };
 
     console.log('Saving expense with payload:', expense); // Debugging-Ausgabe
