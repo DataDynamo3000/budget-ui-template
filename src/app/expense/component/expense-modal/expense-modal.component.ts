@@ -98,7 +98,7 @@ export default class ExpenseModalComponent {
     this.expenseForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
       categoryId: [null],
-      amount: [0, [Validators.required, Validators.min(0.01)]],
+      amount: [null, [Validators.required, Validators.min(0.01)]],
       date: [defaultDate, Validators.required] // Setze das Datum im Formular
     });
   }

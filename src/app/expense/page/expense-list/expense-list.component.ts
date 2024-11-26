@@ -115,7 +115,10 @@ export default class ExpenseListComponent implements OnInit {
     const grouped: { [key: string]: Expense[] } = {};
     expenses.forEach(expense => {
       if (!grouped[expense.date]) grouped[expense.date] = [];
-      grouped[expense.date].push(expense);
+      // Verhindere doppelte Einträge
+      if (!grouped[expense.date].some(e => e.id === expense.id)) {
+        grouped[expense.date].push(expense);
+      }
     });
 
     console.log('Grouped expenses:', grouped); // Debug-Ausgabe
@@ -177,6 +180,9 @@ export default class ExpenseListComponent implements OnInit {
   }
 
   reloadExpenses(event?: CustomEvent): void {
+    this.currentPage = 0; // Seitenzähler zurücksetzen
+    this.expenseGroups = null; // Vorhandene Gruppen löschen
+    this.lastPageReached = false; // Infinite Scroll zurücksetzen
     this.loadExpenses(() => {
       if (event) {
         void (event.target as HTMLIonRefresherElement).complete(); // Beendet die Refresher-Animation
