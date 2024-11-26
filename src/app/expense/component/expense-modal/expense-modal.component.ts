@@ -26,7 +26,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { addIcons } from 'ionicons';
 import { add, calendar, cash, close, pricetag, save, text, trash } from 'ionicons/icons';
 import CategoryModalComponent from '../../../category/component/category-modal/category-modal.component';
-import { Category, ExpenseUpsertDto } from '../../../shared/domain';
+import { Category, Expense, ExpenseUpsertDto } from '../../../shared/domain';
 import { ExpenseService } from '../../Service/expense.service';
 import { CategoryService } from '../../../category/service/category.service';
 import { ToastService } from '../../../shared/toast.service';
@@ -68,6 +68,7 @@ import { Input } from '@angular/core';
 })
 export default class ExpenseModalComponent {
   @Input() date!: string;
+  @Input() expense?: Expense;
   @Output() expenseSaved = new EventEmitter<void>();
   expenseForm!: FormGroup;
   categories: Category[] = [];
@@ -87,7 +88,37 @@ export default class ExpenseModalComponent {
 
   ngOnInit() {
     console.log('Received date in modal:', this.date); // Debugging-Ausgabe
+    console.log('Received expense in modal:', this.expense); // Debugging
     this.initializeForm();
+    if (this.expense) {
+      const { id, amount, category, date, name } = this.expense;
+      this.expenseForm.patchValue({ id, amount, categoryId: category?.id, date, name });
+      console.log('Patched expenseForm values:', this.expenseForm.value); // Debugging
+
+      // Kategorie in die Liste hinzufügen, falls sie noch nicht geladen ist
+      if (category && !this.categories.some(c => c.id === category.id)) {
+        this.categories.push(category);
+        console.log('Added category to categories:', category); // Debugging
+      }
+    }
+  }
+
+  deleteExpense(): void {
+    if (!this.expense?.id) return;
+
+    this.isLoading = true;
+
+    this.expenseService.deleteExpense(this.expense.id).subscribe({
+      next: () => {
+        this.toastService.displaySuccessToast('Expense deleted successfully.');
+        this.expenseSaved.emit(); // Signalisiere Parent-Komponente
+        this.modalCtrl.dismiss(null, 'delete');
+      },
+      error: error => {
+        this.toastService.displayErrorToast('Failed to delete the expense.', error);
+        this.isLoading = false;
+      }
+    });
   }
 
   //Initialisiert

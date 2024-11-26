@@ -74,7 +74,7 @@
               <ion-item-divider>
                 <ion-label>{{ group.date | date: 'longDate' }}</ion-label>
               </ion-item-divider>
-              <ion-item *ngFor="let expense of group.expenses">
+              <ion-item *ngFor="let expense of group.expenses" (click)="openEditModal(expense)">
                 <div style="display: flex; align-items: center; width: 100%;">
                   <!-- Name -->
                   <div style="flex: 1;">

@@ -272,22 +272,40 @@ export default class ExpenseListComponent implements OnInit {
     this.loadExpenses(); // Daten für den neuen Monat laden
   };
 
-  async openModal() {
+  async openModal(expense?: Expense) {
     const formattedDate = this.date.toISOString().split('T')[0];
     console.log('Opening modal with date:', formattedDate); // Debugging-Ausgabe
 
     const modal = await this.modalCtrl.create({
       component: ExpenseModalComponent,
       componentProps: {
-        date: formattedDate
+        date: formattedDate,
+        expense
       }
     });
 
     await modal.present();
 
     const { role } = await modal.onWillDismiss();
-    if (role === 'save') {
+    if (['save', 'delete'].includes(role || '')) {
       this.reloadExpenses();
+    }
+  }
+  async openEditModal(expense: Expense): Promise<void> {
+    console.log('Opening Edit Modal for expense:', expense); // Debugging
+    const modal = await this.modalCtrl.create({
+      component: ExpenseModalComponent,
+      componentProps: {
+        expense: expense, // Übergebe die ausgewählte Ausgabe
+        date: expense.date // Optional: Aktuelles Datum setzen
+      }
+    });
+
+    await modal.present();
+
+    const { role } = await modal.onWillDismiss();
+    if (role === 'save' || role === 'delete') {
+      this.reloadExpenses(); // Liste nach Änderungen neu laden
     }
   }
 }

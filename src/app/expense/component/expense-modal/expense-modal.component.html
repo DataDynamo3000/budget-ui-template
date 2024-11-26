@@ -11,7 +11,7 @@
       </ion-button>
     </ion-buttons>
     <ion-title>
-      Add Expense
+      {{ expense?.id ? 'Edit Expense' : 'Create Expense' }}
     </ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="save()" [disabled]="expenseForm.invalid || isLoading">
@@ -47,6 +47,7 @@
     <ion-item>
       <ion-icon name="pricetag" slot="start"></ion-icon>
       <ion-select formControlName="categoryId" interface="popover" placeholder="Category">
+        <ion-select-option [value]="null"></ion-select-option>
         <ion-select-option *ngFor="let category of categories" [value]="category.id">
           {{ category.name }}
         </ion-select-option>
@@ -87,6 +88,12 @@
         </ng-template>
       </ion-modal>
     </ion-item>
+    <!-- Delete Button -->
+    <ion-fab slot="fixed" vertical="bottom" horizontal="end" *ngIf="expense?.id">
+      <ion-fab-button (click)="deleteExpense()" color="danger">
+        <ion-icon name="trash"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
     <!-- Progress Bar -->
     <ion-progress-bar *ngIf="isLoading" type="indeterminate"></ion-progress-bar>
 
