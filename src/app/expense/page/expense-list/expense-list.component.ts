@@ -32,15 +32,16 @@ import {
   IonToolbar,
   ModalController
 } from '@ionic/angular/standalone';
-import { ReactiveFormsModule } from '@angular/forms';
+import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { add, alertCircleOutline, arrowBack, arrowForward, pricetag, search, swapVertical } from 'ionicons/icons';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import ExpenseModalComponent from '../../component/expense-modal/expense-modal.component';
-import { Expense, ExpenseCriteria } from '../../../shared/domain';
+import { Category, Expense, ExpenseCriteria } from '../../../shared/domain';
 import { ExpenseService } from '../../Service/expense.service';
 import { CommonModule } from '@angular/common';
 import { OnInit } from '@angular/core';
+import { CategoryService } from '../../../category/service/category.service';
 
 interface ExpenseGroup {
   date: string;
@@ -94,11 +95,26 @@ export default class ExpenseListComponent implements OnInit {
   private readonly modalCtrl = inject(ModalController);
   private readonly expenseService = inject(ExpenseService);
   private currentPage = 0;
-
+  private readonly formBuilder = inject(NonNullableFormBuilder);
+  private readonly categoryService = inject(CategoryService);
+  readonly searchForm = this.formBuilder.group({
+    search: [''], // Volltextsuche
+    sort: ['date,DESC'], // Standard-Sortierung
+    categoryIds: [[]] // Filter für Kategorien (Multiselect)
+  });
+  readonly sortOptions = [
+    { label: 'Created at (newest first)', value: 'createdAt,DESC' },
+    { label: 'Created at (oldest first)', value: 'createdAt,ASC' },
+    { label: 'Date (newest first)', value: 'date,DESC' },
+    { label: 'Date (oldest first)', value: 'date,ASC' },
+    { label: 'Name (A-Z)', value: 'name,ASC' },
+    { label: 'Name (Z-A)', value: 'name,DESC' }
+  ];
   date = set(new Date(), { date: 1 });
   expenseGroups: ExpenseGroup[] | null = null; // Zum Speichern der gruppierten Ausgaben
   loading = false; // Ladezustand
   lastPageReached = false; // Status für unendliches Scrollen
+  categories: Category[] = []; // Speichert die Kategorien
 
   constructor() {
     // Add all used Ionic icons
@@ -107,7 +123,15 @@ export default class ExpenseListComponent implements OnInit {
 
   ngOnInit(): void {
     console.log('Initializing ExpenseListComponent...');
-    this.loadExpenses(); // Daten beim Start der Komponente laden
+    this.loadCategories(); // Kategorien laden
+    this.loadExpenses(); // Daten laden
+    this.searchForm.valueChanges.subscribe(formValues => {
+      console.log('Form values changed:', formValues); // Debugging-Ausgabe
+      this.currentPage = 0; // Seite zurücksetzen
+      this.expenseGroups = null; // Gruppen zurücksetzen
+      this.lastPageReached = false; // Infinite Scroll zurücksetzen
+      this.loadExpenses(); // Neue Daten laden
+    });
   }
 
   private groupExpensesByDate(expenses: Expense[]): ExpenseGroup[] {
@@ -144,19 +168,21 @@ export default class ExpenseListComponent implements OnInit {
   }
 
   private loadExpenses(next: () => void = () => {}): void {
+    const formValues = this.searchForm.value;
     const criteria: ExpenseCriteria = {
       yearMonth: `${this.date.getFullYear()}${(this.date.getMonth() + 1).toString().padStart(2, '0')}`,
       page: this.currentPage,
       size: 10,
-      sort: 'date,DESC'
+      sort: formValues.sort || 'date,DESC',
+      name: formValues.search?.trim(), // Volltextsuche
+      categoryIds: formValues.categoryIds // Kategorien
     };
+    console.log('Loading expenses with criteria:', criteria); // Debugging
 
-    console.log('Loading expenses for yearMonth:', criteria.yearMonth); // Debugging-Ausgabe
     this.loading = true;
 
     this.expenseService.getExpenses(criteria).subscribe({
       next: expensePage => {
-        console.log('Loaded expenses from API:', expensePage.content); // Debugging-Ausgabe
         const newGroups = this.groupExpensesByDate(expensePage.content);
         this.expenseGroups = this.mergeExpenseGroups(this.expenseGroups || [], newGroups);
 
@@ -187,6 +213,16 @@ export default class ExpenseListComponent implements OnInit {
       if (event) {
         void (event.target as HTMLIonRefresherElement).complete(); // Beendet die Refresher-Animation
       }
+    });
+  }
+
+  private loadCategories(): void {
+    this.categoryService.getAllCategories({ sort: 'name,asc' }).subscribe({
+      next: categories => {
+        this.categories = categories; // Speichert die geladenen Kategorien
+        console.log('Loaded categories:', this.categories); // Debugging
+      },
+      error: error => console.error('Failed to load categories:', error)
     });
   }
 

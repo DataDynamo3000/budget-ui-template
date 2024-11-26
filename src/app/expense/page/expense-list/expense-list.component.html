@@ -22,33 +22,38 @@
   <ion-refresher slot="fixed" (ionRefresh)="reloadExpenses($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
-  <ion-grid>
+  <ion-grid [formGroup]="searchForm">
+    <!-- Sort -->
     <ion-row>
       <ion-col size="12" size-sm="4">
         <ion-item>
           <ion-icon name="swap-vertical" slot="start"></ion-icon>
-          <ion-select interface="popover">
-            <ion-select-option> Created at (newest first)</ion-select-option>
-            <ion-select-option> Created at (oldest first)</ion-select-option>
-            <ion-select-option> Date (newest first)</ion-select-option>
-            <ion-select-option> Date (oldest first)</ion-select-option>
-            <ion-select-option> Name (A-Z)</ion-select-option>
-            <ion-select-option> Name (Z-A)</ion-select-option>
+          <ion-select interface="popover" formControlName="sort">
+            <ion-select-option value="createdAt,DESC">Created at (newest first)</ion-select-option>
+            <ion-select-option value="createdAt,ASC">Created at (oldest first)</ion-select-option>
+            <ion-select-option value="date,DESC">Date (newest first)</ion-select-option>
+            <ion-select-option value="date,ASC">Date (oldest first)</ion-select-option>
+            <ion-select-option value="name,ASC">Name (A-Z)</ion-select-option>
+            <ion-select-option value="name,DESC">Name (Z-A)</ion-select-option>
           </ion-select>
         </ion-item>
       </ion-col>
+      <!-- Category Filter -->
       <ion-col size="12" size-sm="4">
         <ion-item>
           <ion-icon name="pricetag" slot="start"></ion-icon>
-          <ion-select interface="popover" placeholder="Category" multiple="true">
-
+          <ion-select formControlName="categoryIds" interface="popover" placeholder="Category" multiple="true">
+            <ion-select-option *ngFor="let category of categories" [value]="category.id">
+              {{ category.name }}
+            </ion-select-option>
           </ion-select>
         </ion-item>
       </ion-col>
+      <!-- Search -->
       <ion-col size="12" size-sm="4">
         <ion-item>
           <ion-icon name="search" slot="start"></ion-icon>
-          <ion-input maxlength="40" placeholder="Search"></ion-input>
+          <ion-input maxlength="40" placeholder="Search" formControlName="search"></ion-input>
         </ion-item>
       </ion-col>
     </ion-row>

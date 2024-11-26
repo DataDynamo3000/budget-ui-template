@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Expense, ExpenseCriteria, ExpenseUpsertDto, Page } from '../../shared/domain';
+import { Category, Expense, ExpenseCriteria, ExpenseUpsertDto, Page } from '../../shared/domain';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -14,6 +14,7 @@ export class ExpenseService {
   // GET: Ausgaben abrufen
   getExpenses(criteria: ExpenseCriteria): Observable<Page<Expense>> {
     const params = new HttpParams({ fromObject: { ...criteria } });
+    console.log('API Request Params:', params.toString()); // Debugging
     return this.http.get<Page<Expense>>(this.baseUrl, { params });
   }
 
@@ -25,5 +26,8 @@ export class ExpenseService {
   // DELETE: Ausgaben löschen
   deleteExpense(expenseId: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${expenseId}`);
+  }
+  getCategories(): Observable<Category[]> {
+    return this.http.get<Category[]>(`${this.baseUrl}/categories`);
   }
 }

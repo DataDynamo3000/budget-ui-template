@@ -78,4 +78,5 @@ export interface ExpenseCriteria extends PagingCriteria {
   categoryIds?: string[];
   name?: string;
   yearMonth?: string;
+  search?: string;
 }
